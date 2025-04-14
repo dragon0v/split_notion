@@ -1,0 +1,32 @@
+name: 定时结算 Notion 数据
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 每天 UTC 2:00（根据你时区调整）
+  workflow_dispatch:       # 也支持手动触发
+
+jobs:
+  run_settle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout 仓库代码
+        uses: actions/checkout@v3
+
+      - name: 设置 Python 环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          
+
+      - name: 执行结算脚本
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_SECRET }}
+          DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        run: |
+          python settle.py \
+            --database_id="${DATABASE_ID}" \
+            --notion_token="${NOTION_TOKEN}" \
+            --currency="SEK" \
+            --settle_mode="bank" \
+            --exchange_rate_mode: "local"
