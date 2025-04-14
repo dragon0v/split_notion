@@ -107,7 +107,7 @@ def settle(database_id, notion_token, **kwargs):
             if participant == bank:
                 continue
             if amount > 0:
-                print(f"{bank} 应向 {participant} 支付 {-amount} {settle_currency}")
+                print(f"{bank} 应向 {participant} 支付 {amount} {settle_currency}")
             elif amount <= 0:
                 print(f"{bank} 应从 {participant} 得到 {-amount} {settle_currency}")
         print(f"({bank} 总计得到 {new_gets[bank]} {settle_currency})")
