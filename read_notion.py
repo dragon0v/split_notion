@@ -82,7 +82,7 @@ def parse_pages(pages):
             "currency": currency,
             "amount": amount
         })
-        
+
     return data, all_participants, all_currencies
 
 
@@ -121,6 +121,7 @@ def read_notion_database(database_id, notion_token):
 
         else:
             print("获取失败")
+            print(response.text)
             break
     
     return all_pages
