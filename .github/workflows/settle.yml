@@ -32,4 +32,4 @@ jobs:
             notion_token="${NOTION_TOKEN}" \
             --currency="SEK" \
             --settle_mode="bank" \
-            --exchange_rate_mode: "local"
+            --exchange_rate_mode="local"
