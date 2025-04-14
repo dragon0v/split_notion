@@ -19,8 +19,8 @@ if __name__ == "__main__":
     # 转 kwargs 并调用
     kwargs = {
         "currency": args.currency,
-        "settle_mode": "bank",
-        "exchange_rate_mode": "local",
+        "settle_mode": args.settle_mode,
+        "exchange_rate_mode": args.exchange_rate_mode,
     }
 
     settle(args.database_id, args.notion_token, **kwargs)
