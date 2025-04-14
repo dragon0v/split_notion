@@ -27,7 +27,7 @@ jobs:
           NOTION_TOKEN: ${{ secrets.NOTION_SECRET }}
           DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
-          python settle.py \
+          python main.py \
             --database_id="${DATABASE_ID}" \
             --notion_token="${NOTION_TOKEN}" \
             --currency="SEK" \
