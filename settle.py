@@ -42,6 +42,7 @@ def settle(database_id, notion_token, **kwargs):
     
     has_paid = defaultdict(lambda: defaultdict(int)) # who has paid how much in different currencies
     gets = defaultdict(lambda: defaultdict(int)) # who gets how much in different currencies
+    total_amount = defaultdict(int) # currency: amount
     for payment in data:
         participants = payment["participants"]
         payer = payment["payer"]
@@ -54,6 +55,7 @@ def settle(database_id, notion_token, **kwargs):
         
         has_paid[payer][currency] += amount
         gets[payer][currency] += amount
+        total_amount[currency] += amount
         
         # 计算每个人的份额
         share = amount / len(participants)
@@ -67,6 +69,8 @@ def settle(database_id, notion_token, **kwargs):
         for currency, amount in currencies.items():
             if amount > 0:
                 print(f"{participant} 累计已支付 {amount} {currency}")
+    for currency, amount in total_amount.items():
+        print(f"总计已支付 {amount} {currency}")
     print('------------------------------')
 
     # print everyone's total amount to get
