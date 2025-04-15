@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_argument("--exchange_rate_mode", help="Exchange rate mode")
 
     args = parser.parse_args()
+    print(args)
 
     # 转 kwargs 并调用
     kwargs = {

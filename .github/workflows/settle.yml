@@ -28,8 +28,8 @@ jobs:
           DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
         run: |
           python main.py \
-            database_id="${DATABASE_ID}" \
-            notion_token="${NOTION_TOKEN}" \
+            "${DATABASE_ID}" \
+            "${NOTION_TOKEN}" \
             --currency="SEK" \
             --settle_mode="bank" \
             --exchange_rate_mode="local"
