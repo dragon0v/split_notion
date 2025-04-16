@@ -1,6 +1,6 @@
 import argparse
 from settle import settle
-
+from add_to_notion import update_notion
 
 
 
@@ -24,4 +24,5 @@ if __name__ == "__main__":
         "exchange_rate_mode": args.exchange_rate_mode,
     }
 
-    settle(args.database_id, args.notion_token, **kwargs)
+    data_to_notion = settle(args.database_id, args.notion_token, **kwargs)
+    update_notion(data_to_notion, args.database_id, args.notion_token)

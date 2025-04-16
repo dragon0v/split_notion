@@ -1,7 +1,8 @@
 from collections import defaultdict
 import time
 import read_notion
-from secret import NOTION_SECRET, NOTION_DATABASE_ID
+from add_to_notion import update_notion
+from secret import NOTION_SECRET, NOTION_DATABASE_ID, NOTION_PAGE_ID
 from constants import EXCHANGE_RATE_LOCAL
 
 
@@ -13,9 +14,10 @@ def settle(database_id, notion_token, **kwargs):
     :param notion_token: Notion 集成令牌
     :param args: 其他参数
     :param kwargs: 关键字参数
-    :return: None
+    :return: log: str
     """
 
+    log = ""
 
     for key, value in kwargs.items():
         match key:
@@ -41,6 +43,7 @@ def settle(database_id, notion_token, **kwargs):
     # print(all_participants)
     # print(all_currencies)
     print("更新于：", time.ctime())
+    log += f"更新于：{time.ctime()}\n"
     
     has_paid = defaultdict(lambda: defaultdict(int)) # who has paid how much in different currencies
     gets = defaultdict(lambda: defaultdict(int)) # who gets how much in different currencies
@@ -71,28 +74,36 @@ def settle(database_id, notion_token, **kwargs):
         for currency, amount in currencies.items():
             if amount > 0:
                 print(f"{participant} 累计已支付 {amount} {currency}")
+                log += f"{participant} 累计已支付 {amount} {currency}\n"
     for currency, amount in total_amount.items():
         print(f"总计已支付 {amount} {currency}")
+        log += f"总计已支付 {amount} {currency}\n"
     print('------------------------------')
+    log += '------------------------------\n'
 
     # print everyone's total amount to get
     for participant, currencies in gets.items():
         for currency, amount in currencies.items():
             if amount > 0:
                 print(f"{participant} 应收 {amount} {currency}")
+                log += f"{participant} 应收 {amount} {currency}\n"
             elif amount < 0:
                 print(f"{participant} 应付 {-amount} {currency}")
+                log += f"{participant} 应付 {-amount} {currency}\n"
             # else:
             #     print(f"{participant} is settled up in {currency}")
     print('------------------------------')
+    log += '------------------------------\n'
 
     # settle
     if settle_mode == 'bank':
         new_gets = defaultdict(int) # who gets how much in settle_currency
         print(f'正在以 {settle_currency} 结算')
+        log += f'正在以 {settle_currency} 结算\n'
 
         if exchange_rate_mode == 'local':
             print('使用本地汇率', EXCHANGE_RATE_LOCAL)
+            log += '使用本地汇率' + str(EXCHANGE_RATE_LOCAL) + '\n'
             exchange_rate_dict = EXCHANGE_RATE_LOCAL
 
         for participant, currencies in gets.items():
@@ -114,11 +125,18 @@ def settle(database_id, notion_token, **kwargs):
                 continue
             if amount > 0:
                 print(f"{bank} 应向 {participant} 支付 {amount} {settle_currency}")
+                log += f"{bank} 应向 {participant} 支付 {amount} {settle_currency}\n"
             elif amount <= 0:
                 print(f"{bank} 应从 {participant} 得到 {-amount} {settle_currency}")
+                log += f"{bank} 应从 {participant} 得到 {-amount} {settle_currency}\n"
         print(f"({bank} 总计得到 {new_gets[bank]} {settle_currency})")
+        log += f"({bank} 总计得到 {new_gets[bank]} {settle_currency})\n"
         print('------------------------------')
+        log += '------------------------------\n'
+
+        return log
 
 
 if __name__ == "__main__":
-    settle(NOTION_DATABASE_ID, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
+    log = settle(NOTION_DATABASE_ID, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
+    update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
