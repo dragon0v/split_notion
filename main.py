@@ -9,6 +9,7 @@ from add_to_notion import update_notion
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Settle Notion pages.")
     parser.add_argument("database_id", help="Notion database ID")
+    parser.add_argument("page_id", help="Notion output page ID")
     parser.add_argument("notion_token", help="Notion integration token")
     parser.add_argument("--currency", help="Currency to settle")
     parser.add_argument("--settle_mode", help="Settle mode")
@@ -25,4 +26,4 @@ if __name__ == "__main__":
     }
 
     data_to_notion = settle(args.database_id, args.notion_token, **kwargs)
-    update_notion(data_to_notion, args.database_id, args.notion_token)
+    update_notion(data_to_notion, args.page_id, args.notion_token)
