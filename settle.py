@@ -1,4 +1,5 @@
 from collections import defaultdict
+import time
 import read_notion
 from secret import NOTION_SECRET, NOTION_DATABASE_ID
 from constants import EXCHANGE_RATE_LOCAL
@@ -39,6 +40,7 @@ def settle(database_id, notion_token, **kwargs):
     # print(data)
     # print(all_participants)
     # print(all_currencies)
+    print("更新于：", time.ctime())
     
     has_paid = defaultdict(lambda: defaultdict(int)) # who has paid how much in different currencies
     gets = defaultdict(lambda: defaultdict(int)) # who gets how much in different currencies

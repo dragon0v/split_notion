@@ -40,7 +40,7 @@ def extract_settled(properties):
 # 提取日期（date）
 def extract_date(properties):
     date_info = properties.get("Date", {}).get("date", {})
-    return date_info.get("start")
+    return date_info.get("start", None)
 
 # 提取币种（select）
 def extract_currency(properties):
@@ -58,6 +58,9 @@ def parse_pages(pages):
     all_currencies = set()
     for page in pages:
         properties = page['properties']
+        if "参与人" not in properties or "支付人" not in properties or "币种" not in properties or "金额" not in properties:
+            print("有缺失的字段,跳过")
+            continue
         participants = extract_participants(properties)
         payer = extract_payer(properties)
         title = extract_title(properties)
