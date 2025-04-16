@@ -139,4 +139,4 @@ def settle(database_id, notion_token, **kwargs):
 
 if __name__ == "__main__":
     log = settle(NOTION_DATABASE_ID, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
-    # update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
+    update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
