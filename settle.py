@@ -42,8 +42,8 @@ def settle(database_id, notion_token, **kwargs):
     # print(data)
     # print(all_participants)
     # print(all_currencies)
-    print("更新于：", time.ctime())
-    log += f"更新于：{time.ctime()}\n"
+    print("更新于：", time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()))
+    log += "更新于：" + time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()) + "\n"
     
     has_paid = defaultdict(lambda: defaultdict(int)) # who has paid how much in different currencies
     gets = defaultdict(lambda: defaultdict(int)) # who gets how much in different currencies
@@ -139,4 +139,4 @@ def settle(database_id, notion_token, **kwargs):
 
 if __name__ == "__main__":
     log = settle(NOTION_DATABASE_ID, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
-    update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
+    # update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
