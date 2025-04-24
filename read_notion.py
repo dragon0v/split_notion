@@ -2,7 +2,31 @@ import requests
 import json
 import os
 
-from secret import NOTION_SECRET, NOTION_DATABASE_ID
+from secret import NOTION_SECRET, NOTION_PAGE_ID
+
+def get_ids(page_id, notion_token):
+    HEADERS = {
+        "Authorization": f"Bearer {notion_token}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+    }
+    # Step 1: fetch all blocks in the page
+    url = f"https://api.notion.com/v1/blocks/{page_id}/children?page_size=100"
+    res = requests.get(url, headers=HEADERS)
+    res.raise_for_status()
+    blocks =  res.json()["results"]
+    # Step 2: find the first inline database block and the first code block
+    database_id = None
+    code_block_id = None
+    for block in blocks:
+        if database_id is None and block["type"] == "child_database":
+            database_id = block["id"]
+        elif code_block_id is None and block["type"] == "code":
+            code_block_id = block["id"]
+    # Step 3: check if both blocks are found
+    if database_id is None or code_block_id is None:
+        raise ValueError("inline database block or code block not found")
+    return database_id, code_block_id
 
 def extract_participants(properties):
     participants = properties.get("参与人", {}).get("multi_select", [])
@@ -76,7 +100,6 @@ def parse_pages(pages):
         if not participants or not payer or not currency or not amount:
             # amount = 0 is also considered as missing value
             print("有缺失的值,跳过")
-            print(f"参与人: {participants}, 支付人: {payer}, 币种: {currency}, 金额: {amount}")
             skipped += 1
             continue
 
@@ -110,18 +133,18 @@ def read_notion_database(database_id, notion_token):
         list: A list of dictionaries representing the rows in the database.
     """
 
-    headers = {
+    HEADERS = {
         "Authorization": f"Bearer {notion_token}",
         "Notion-Version": "2022-06-28",
         "Content-Type": "application/json"
     }
     response = requests.post(
         f"https://api.notion.com/v1/databases/{database_id}/query",
-        headers=headers,
+        headers=HEADERS,
     )
     # print(response.text)
     has_more = True
-    start_cursor = None
+    start_cursor = None # TODO query only returns 100 results, so we need to paginate in the future version
     all_pages = []
 
     while has_more:
@@ -140,7 +163,7 @@ def read_notion_database(database_id, notion_token):
 
 if __name__ == "__main__":
     notion_token = NOTION_SECRET
-    database_id = NOTION_DATABASE_ID
+    database_id, _ = get_ids(NOTION_PAGE_ID, notion_token)
     
     database_content = read_notion_database(database_id, notion_token)
     # print(json.dumps(database_content, indent=4, ensure_ascii=False))

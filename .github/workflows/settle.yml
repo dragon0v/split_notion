@@ -25,11 +25,9 @@ jobs:
       - name: 执行结算脚本
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_SECRET }}
-          DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
           PAGE_ID: ${{ secrets.NOTION_PAGE_ID }}
         run: |
           python main.py \
-            "${DATABASE_ID}" \
             "${PAGE_ID}" \
             "${NOTION_TOKEN}" \
             --currency="SEK" \

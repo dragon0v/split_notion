@@ -1,8 +1,8 @@
 from collections import defaultdict
 import time
-import read_notion
+from read_notion import read_notion_database, parse_pages, get_ids
 from add_to_notion import update_notion
-from secret import NOTION_SECRET, NOTION_DATABASE_ID, NOTION_PAGE_ID
+from secret import NOTION_SECRET, NOTION_PAGE_ID
 from constants import EXCHANGE_RATE_LOCAL
 
 
@@ -34,10 +34,10 @@ def settle(database_id, notion_token, **kwargs):
         
 
     # 读取 Notion 数据库
-    pages = read_notion.read_notion_database(database_id, notion_token)
+    pages = read_notion_database(database_id, notion_token)
     
     # 解析页面数据
-    data, all_participants, all_currencies, skipped = read_notion.parse_pages(pages)
+    data, all_participants, all_currencies, skipped = parse_pages(pages)
 
     # print(data)
     # print(all_participants)
@@ -143,5 +143,6 @@ def settle(database_id, notion_token, **kwargs):
 
 
 if __name__ == "__main__":
-    log = settle(NOTION_DATABASE_ID, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
-    update_notion(log, NOTION_PAGE_ID, NOTION_SECRET)
+    database_id, code_block_id = get_ids(NOTION_PAGE_ID, NOTION_SECRET)
+    log = settle(database_id, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
+    update_notion(log, code_block_id, NOTION_SECRET)
