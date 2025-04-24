@@ -56,10 +56,12 @@ def parse_pages(pages):
     data = []
     all_participants = set()
     all_currencies = set()
+    skipped = 0
     for page in pages:
         properties = page['properties']
         if "参与人" not in properties or "支付人" not in properties or "币种" not in properties or "金额" not in properties:
             print("有缺失的字段,跳过")
+            skipped += 1
             continue
         participants = extract_participants(properties)
         payer = extract_payer(properties)
@@ -70,6 +72,13 @@ def parse_pages(pages):
         currency = extract_currency(properties)
         amount = extract_amount(properties)
         title = extract_title(properties)
+
+        if not participants or not payer or not currency or not amount:
+            # amount = 0 is also considered as missing value
+            print("有缺失的值,跳过")
+            print(f"参与人: {participants}, 支付人: {payer}, 币种: {currency}, 金额: {amount}")
+            skipped += 1
+            continue
 
         all_participants.update(participants)
         all_participants.add(payer)
@@ -86,7 +95,7 @@ def parse_pages(pages):
             "amount": amount
         })
 
-    return data, all_participants, all_currencies
+    return data, all_participants, all_currencies, skipped
 
 
 def read_notion_database(database_id, notion_token):
@@ -136,5 +145,5 @@ if __name__ == "__main__":
     database_content = read_notion_database(database_id, notion_token)
     # print(json.dumps(database_content, indent=4, ensure_ascii=False))
 
-    data, all_participants, all_currencies = parse_pages(database_content)
-    print(data, all_participants, all_currencies)
+    data, all_participants, all_currencies, skipped = parse_pages(database_content)
+    print(data, all_participants, all_currencies, skipped)

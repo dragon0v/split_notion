@@ -37,13 +37,18 @@ def settle(database_id, notion_token, **kwargs):
     pages = read_notion.read_notion_database(database_id, notion_token)
     
     # 解析页面数据
-    data, all_participants, all_currencies = read_notion.parse_pages(pages)
+    data, all_participants, all_currencies, skipped = read_notion.parse_pages(pages)
 
     # print(data)
     # print(all_participants)
     # print(all_currencies)
     print("更新于：", time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()))
     log += "更新于：" + time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()) + "\n"
+    if skipped>0:
+        print("存在", skipped, "条异常数据，已跳过")
+        log += "存在" + str(skipped) + "条异常数据，已跳过\n"
+    print('------------------------------')
+    log += '------------------------------\n'
     
     has_paid = defaultdict(lambda: defaultdict(int)) # who has paid how much in different currencies
     gets = defaultdict(lambda: defaultdict(int)) # who gets how much in different currencies
