@@ -1,5 +1,13 @@
 import requests
-from secret import NOTION_SECRET, NOTION_PAGE_ID
+import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件中的变量
+load_dotenv()
+
+# 从环境变量中读取
+NOTION_SECRET = os.getenv("NOTION_SECRET")
+NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")
 
 def update_code_block(block_id, notion_token, new_code):
     HEADERS = {

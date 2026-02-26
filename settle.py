@@ -2,8 +2,16 @@ from collections import defaultdict
 import time
 from read_notion import read_notion_database, parse_pages, get_ids
 from add_to_notion import update_notion
-from secret import NOTION_SECRET, NOTION_PAGE_ID
 from constants import EXCHANGE_RATE_LOCAL
+import os
+from dotenv import load_dotenv
+
+# 加载 .env 文件中的变量
+load_dotenv()
+
+# 从环境变量中读取
+NOTION_SECRET = os.getenv("NOTION_SECRET")
+NOTION_PAGE_ID = os.getenv("NOTION_PAGE_ID")
 
 
 
