@@ -6,6 +6,8 @@ from constants import EXCHANGE_RATE_LOCAL
 import os
 from dotenv import load_dotenv
 
+from frankfurter import build_exchange_rate_dict
+
 # 加载 .env 文件中的变量
 load_dotenv()
 
@@ -118,13 +120,17 @@ def settle(database_id, notion_token, **kwargs):
             print('使用本地汇率', EXCHANGE_RATE_LOCAL)
             log += '使用本地汇率' + str(EXCHANGE_RATE_LOCAL) + '\n'
             exchange_rate_dict = EXCHANGE_RATE_LOCAL
+        elif exchange_rate_mode == 'today':
+            print('使用今日frankfurter汇率')
+            log += '使用今日frankfurter汇率' + '\n'
+            exchange_rate_dict = build_exchange_rate_dict()
 
         for participant, currencies in gets.items():
             for currency, amount in currencies.items():
                 if currency == settle_currency:
                     new_gets[participant] += amount
                 else:
-                    new_gets[participant] += amount * exchange_rate_dict[currency][settle_currency]
+                    new_gets[participant] += amount / exchange_rate_dict[settle_currency][currency]
         # find who is bank
         _max_amount = 0
         bank = None
@@ -152,5 +158,7 @@ def settle(database_id, notion_token, **kwargs):
 
 if __name__ == "__main__":
     database_id, code_block_id = get_ids(NOTION_PAGE_ID, NOTION_SECRET)
-    log = settle(database_id, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
+    # log = settle(database_id, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='local')
+    # update_notion(log, code_block_id, NOTION_SECRET)
+    log = settle(database_id, NOTION_SECRET, settle_mode='bank', currency='SEK', exchange_rate_mode='today')
     update_notion(log, code_block_id, NOTION_SECRET)
