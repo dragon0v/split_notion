@@ -129,38 +129,37 @@ def parse_pages(pages):
 
 
 def read_notion_database(database_id, notion_token):
-    """
-    Reads a Notion database and returns its content.
-    
-    Args:
-        database_id (str): The ID of the Notion database.
-        notion_token (str): The Notion integration token.
-    
-    Returns:
-        list: A list of dictionaries representing the rows in the database.
-    """
-
-    HEADERS = {
+    headers = {
         "Authorization": f"Bearer {notion_token}",
         "Notion-Version": "2022-06-28",
         "Content-Type": "application/json"
     }
-    response = requests.post(
-        f"https://api.notion.com/v1/databases/{database_id}/query",
-        headers=HEADERS,
-    )
-    # print(response.text)
-    has_more = True
-    start_cursor = None # TODO query only returns 100 results, so we need to paginate in the future version
+    
     all_pages = []
+    has_more = True
+    next_cursor = None
 
     while has_more:
+        # 构造请求体，如果有 cursor 则传入
+        payload = {}
+        if next_cursor:
+            payload["start_cursor"] = next_cursor
+
+        response = requests.post(
+            f"https://api.notion.com/v1/databases/{database_id}/query",
+            headers=headers,
+            json=payload  # 注意：必须以 json 格式发送 payload
+        )
+
         if response.status_code == 200:
-            print("获取成功")
             data = response.json()
             all_pages.extend(data["results"])
+            
+            # 更新分页状态
             has_more = data.get("has_more", False)
-
+            next_cursor = data.get("next_cursor")
+            
+            print(f"已获取 {len(all_pages)} 条数据...")
         else:
             print("获取失败")
             print(response.text)
