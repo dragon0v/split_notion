@@ -1,18 +1,34 @@
 # Fetch exchange rate from Frankfurter Exchange Rates API
 # https://frankfurter.dev/
 
+import json
+import os
+
 import requests
 from datetime import datetime
 
-def build_exchange_rate_dict(base="SEK"):
+def build_exchange_rate_dict(base="SEK", date=None):
     """
-    获取指定基准货币对所有可用币种的今日汇率字典
+    获取指定日期指定基准货币对所有可用币种的汇率字典
+    date默认为今日，格式YYYY-MM-DD
     返回格式: {"CNY": 7.24, "EUR": 0.92, ...}
     """
     base = base.upper()
-    # 不带 symbols 参数，API 会返回所有支持的货币
-    url = f"https://api.frankfurter.dev/v1/latest"
     params = {"base": base}
+
+    if date is None:
+        date = datetime.now().strftime("%Y-%m-%d")
+        url = f"https://api.frankfurter.dev/v1/latest"
+        cache_name = f"temp/frankfurter_{datetime.now().strftime("%Y%m%d_%H%M%S")}_{base}.json"
+    else:
+        validate_date(date)
+        url = f"https://api.frankfurter.dev/v1/{date}"
+        # 如果temp文件夹内已有本地缓存的汇率，直接读取本地汇率并返回
+        cache_name = f"temp/frankfurter_{date.replace('-', '')}_{base}.json"
+        if os.path.exists(cache_name):
+            with open(cache_name, "r") as f:
+                print("Using cached exchange rates from", cache_name)
+                return json.load(f)
 
     try:
         response = requests.get(url, params=params)
@@ -31,88 +47,39 @@ def build_exchange_rate_dict(base="SEK"):
         exchange_rates[base] = 1.0
         
         print(f"✅ 成功构建汇率表，基准: {base}，共包含 {len(exchange_rates)} 个币种。")
-        """
-        # return format
-        EXCHANGE_RATE_LOCAL = {
-            "description": "4-12到4-18的xe平均汇率",
-            "SEK": {
-                "NOK": 1 / 0.922346,
-            },
-            "NOK": {
-                "SEK": 0.922346,
-            },
-        }
-        """
+
         format_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        return {"description":f"{format_time} 的frankfurter汇率", base:exchange_rates}
+
+        # 保存到本地 temp/frankfurter_YYYYMMDD_base.json
+        if not os.path.exists("temp"):
+            os.makedirs("temp")
+        with open(cache_name, "w") as f:
+            json.dump({"description": f"frankfurter rate on {date}, fetched at {format_time}", base: exchange_rates}, f)
+
+        return {"description": f"frankfurter rate on {date}, fetched at {format_time}", base: exchange_rates}
 
     except requests.exceptions.RequestException as e:
         print(f"🚀 网络连接失败: {e}")
         return {}
-    
 
-def get_exchange_rate(base="USD", target="SEK", date=None):
+def validate_date(date):
     """
-    获取指定日期的汇率：1单位base货币 = x单位target货币
-    date 默认为 None (即最新汇率)，格式应为 'YYYY-MM-DD'
+    验证日期字符串是否符合 YYYY-MM-DD 格式，并且是一个有效的日期
     """
-    
-    # 1. 校验日期格式与合法性
-    request_date = "latest"
-    if date:
-        try:
-            # 尝试解析日期，确保格式正确且是一个真实的日期
-            valid_date = datetime.strptime(date, "%Y-%m-%d")
-            
-            # 判断是否是未来日期（API 不支持预测未来）
-            if valid_date > datetime.now():
-                print(f"⚠️ 错误: 日期 {date} 不能是未来日期。")
-                return None
-            
-            request_date = date
-
-        except ValueError:
-            print(f"⚠️ 错误: 日期格式 '{date}' 无效，请使用 'YYYY-MM-DD' 格式。")
-            return None
-
-    # 2. 构建 API URL
-    # Frankfurter API 路径格式: /YYYY-MM-DD 或 /latest
-    url = f"https://api.frankfurter.dev/v1/{request_date}"
-    params = {
-        "base": base.upper(),
-        "symbols": target.upper()
-    }
-
-    # 3. 发送请求
     try:
-        response = requests.get(url, params=params)
+        # 尝试解析日期，确保格式正确且是一个真实的日期
+        valid_date = datetime.strptime(date, "%Y-%m-%d")
         
-        # 处理 API 报错（如货币代码不支持）
-        if response.status_code != 200:
-            error_info = response.json()
-            print(f"❌ API 错误: {error_info.get('message', '未知错误')}")
-            return None
-            
-        data = response.json()
-        
-        # 提取汇率
-        rate = data.get('rates', {}).get(target.upper())
-        if rate:
-            return rate
-        else:
-            print(f"⚠️ 未能获取 {base} 到 {target} 的汇率。")
-            return None
+        # 判断是否是未来日期
+        if valid_date > datetime.now():
+            raise ValueError(f"日期 {date} 不能是未来日期。")
 
-    except requests.exceptions.RequestException as e:
-        print(f"🚀 网络请求异常: {e}")
-        return None
+    except ValueError as e:
+        print(e)
+
 
 # 使用示例
 if __name__ == "__main__":
-    rate = get_exchange_rate(base="SEK", target="CNY")
-    print(f"当前 SEK/CNY 汇率: {rate}")
-
-    rate = get_exchange_rate(base="SEK", target="CNY", date='2026-01-01')
-    print(f"20260101 SEK/CNY 汇率: {rate}")
-
-    print(build_exchange_rate_dict())
+    # print(build_exchange_rate_dict())
+    # print(build_exchange_rate_dict(base="CNY"))
+    print(build_exchange_rate_dict(base="SEK", date="2026-01-01"))
