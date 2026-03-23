@@ -11,9 +11,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Settle Notion pages.")
     parser.add_argument("page_id", help="Notion output page ID")
     parser.add_argument("notion_token", help="Notion integration token")
-    parser.add_argument("--currency", help="Currency to settle")
-    parser.add_argument("--settle_mode", help="Settle mode")
-    parser.add_argument("--exchange_rate_mode", help="Exchange rate mode")
+    parser.add_argument("--currency", help="Currency to settle, must in ISO 4217 format, e.g. USD, EUR, CNY")
+    parser.add_argument("--settle_mode", choices=["bank"], help="Settle mode")
+    parser.add_argument("--exchange_rate_mode", choices=["local", "today"], help="Exchange rate mode")
 
     args = parser.parse_args()
     print(args)
