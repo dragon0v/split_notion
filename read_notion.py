@@ -90,7 +90,7 @@ def parse_pages(pages):
     skipped = 0
     for page in pages:
         properties = page['properties']
-        if "参与人" not in properties or "支付人" not in properties or "币种" not in properties or "金额" not in properties:
+        if "参与人" not in properties or "支付人" not in properties or "币种" not in properties or "金额" not in properties or "Date" not in properties:
             print("有缺失的字段,跳过")
             skipped += 1
             continue

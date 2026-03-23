@@ -69,6 +69,7 @@ def settle(database_id, notion_token, **kwargs):
         amount = payment["amount"]
         currency = payment["currency"]
         settled = payment["settled"]
+        date = payment["date"]
 
         if settled:
             continue
@@ -124,13 +125,25 @@ def settle(database_id, notion_token, **kwargs):
             print('使用今日frankfurter汇率')
             log += '使用今日frankfurter汇率' + '\n'
             exchange_rate_dict = build_exchange_rate_dict()
+        elif exchange_rate_mode == 'theday':
+            print('使用交易当天frankfurter汇率')
+            log += '使用交易当天frankfurter汇率' + '\n'
+            exchange_rate_dicts = {}
 
-        for participant, currencies in gets.items():
-            for currency, amount in currencies.items():
-                if currency == settle_currency:
-                    new_gets[participant] += amount
-                else:
-                    new_gets[participant] += amount / exchange_rate_dict[settle_currency][currency]
+        # 使用一个固定汇率结算
+        if exchange_rate_mode in ['local', 'today']:
+            for participant, currencies in gets.items():
+                for currency, amount in currencies.items():
+                    if currency == settle_currency:
+                        new_gets[participant] += amount
+                    else:
+                        new_gets[participant] += amount / exchange_rate_dict[settle_currency][currency]
+        # 使用多个交易当天汇率结算
+        elif exchange_rate_mode == 'theday':
+            # TODO, 需要使用日期，当前数据结构好像不支持
+            raise NotImplementedError("theday exchange rate mode is not implemented yet")
+        else:
+            raise ValueError(f"Unknown exchange rate mode: {exchange_rate_mode}")
         # find who is bank
         _max_amount = 0
         bank = None
